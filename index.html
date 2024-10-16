@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penyalin Teks</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        .loader {
+            display: flex;
+            justify-content: space-around;
+            width: 300px;
+        }
+
+        .bounce1,
+        .bounce2,
+        .bounce3 {
+            width: 18px;
+            height: 18px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .bounce1 {
+            animation-delay: -0.32s;
+        }
+
+        .bounce2 {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">
+            <blockquote class="text-2xl font-bold text-center text-slate-900">
+                Bingung ngasih
+                <span
+                    class="before:block before:absolute font-semibold italic before:-inset-1 before:-skew-y-6 before:bg-blue-500 relative inline-block">
+                    <span class="relative text-white">judul</span>
+                </span>
+                jir.
+            </blockquote>
+        </h1>
+        <form class="flex flex-col items-center">
+            <input type="file" id="imageInput" accept="image/*" class="block my-3 w-full text-sm text-slate-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-sm file:border-0
+            file:text-sm file:font-semibold
+            file:bg-blue-50 file:text-blue-700
+            hover:file:bg-blue-100" />
+            <button type="button" onclick="EkstrakFoto()"
+                class="w-full bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600">
+                OK GAS!
+            </button>
+        </form>
+        <div class="mt-4 relative">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Teks:</h3>
+            <textarea id="Hasilekstrak" class="w-full h-40 p-2 border rounded-lg"
+                placeholder="Hasilnya akan ditampilkan di sini..."></textarea>
+            <button id="copyButton" onclick="Salin()"
+                class="bg-blue-500 text-white px-4 py-2 rounded absolute bottom-2 right-2 hidden">
+                <i class='bx bx-copy' id="ikoncopy"></i>
+            </button>
+        </div>
+
+    </div>
+    <div id="ehtapitunggudulu" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="loader">
+            <p class="text-white block">by : Dwi Budi Fitri Adi</p>
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+        </div>
+    </div>
+    <script>
+        function EkstrakFoto() {
+            const imageInput = document.getElementById('imageInput').files[0];
+
+            if (!imageInput) {
+                alert('Ketahuan belum input foto awokoakwoakowa');
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function () {
+                const image = new Image();
+                image.src = reader.result;
+
+                // Tampilkan loading screen
+                const ehtapitunggudulu = document.getElementById('ehtapitunggudulu');
+                ehtapitunggudulu.classList.remove('hidden');
+
+                Tesseract.recognize(
+                    image.src,
+                    'eng',
+                    {
+                        logger: (m) => console.log(m) // Log progress
+                    }
+                ).then(({ data: { text } }) => {
+                    document.getElementById('Hasilekstrak').value = text;
+
+                    // Tampilkan tombol salin setelah teks berhasil diekstraksi
+                    const copyButton = document.getElementById('copyButton');
+                    copyButton.classList.remove('hidden');
+
+                    copyButton.classList.remove('bg-green-500');
+                    copyButton.classList.add('bg-blue-500');
+
+                    // Sembunyikan loading screen setelah selesai
+                    ehtapitunggudulu.classList.add('hidden');
+                }).catch(err => {
+                    console.error(err);
+                    alert('Gagal ekstrak coy, coba lagi nanti');
+
+                    // Sembunyikan loading screen jika terjadi error
+                    ehtapitunggudulu.classList.add('hidden');
+                });
+            };
+
+            reader.readAsDataURL(imageInput);
+        }
+
+        function Salin() {
+            const Hasilekstrak = document.getElementById('Hasilekstrak');
+
+            // Salin teks ke clipboard
+            navigator.clipboard.writeText(Hasilekstrak.value).then(() => {
+                const ikoncopy = document.getElementById('ikoncopy');
+                const copyButton = document.getElementById('copyButton');
+
+                // Ubah ikon dan warna tombol
+                ikoncopy.classList.remove('bx-copy');
+                ikoncopy.classList.add('bxs-copy');
+                copyButton.classList.remove('bg-blue-500');
+                copyButton.classList.add('bg-green-500');
+            }).catch(err => {
+                console.error('Gagal menyalin teks: ', err);
+            });
+        }
+
+
+    </script>
+</body>
+
+</html>
